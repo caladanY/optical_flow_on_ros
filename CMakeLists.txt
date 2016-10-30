@@ -3,15 +3,19 @@ project(optical_process)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  rospy
   std_msgs
-  
+  sensor_msgs
+  cv_bridge
+  genmsg
+  image_transport
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES optical_flow
-#  CATKIN_DEPENDS roscpp std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES optical_flow
+  CATKIN_DEPENDS roscpp std_msgs std_msgs cv_bridge image_transport
+  DEPENDS system_lib
 )
 
 include_directories(
@@ -26,3 +30,11 @@ target_link_libraries(optical_process ${OpenCV_LIBS})
 find_package(klt_feature_tracker)
 include_directories(${klt_feature_tracker_INCLUDE_DIRS})
 target_link_libraries(optical_process ${klt_feature_tracker_LIBRARIES})
+
+
+FILE(GLOB_RECURSE LibFiles "include/*")
+add_custom_target(headers SOURCES ${LibFiles})
+
+include_directories(
+    include
+    )

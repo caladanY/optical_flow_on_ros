@@ -4,9 +4,12 @@
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <cv_bridge/cv_bridge.h>
 
-#include "ros/ros.h"
+#include <image_transport/image_transport.h>
 #include "std_msgs/String.h"
+#include "ros/ros.h"
 
 
 using namespace std;
@@ -15,25 +18,34 @@ using namespace cv;
 extern void trackFeatures(const cv::Mat &img_l, const cv::Mat &img_r, std::vector<cv::Point2f> &features_l, std::vector<cv::Point2f> &features_r, std::vector<int> &status, int stereo);
 
 
+
+void imageCallback(const sensor_msgs::ImageConstPtr& msg)
+{
+  try
+  {
+    cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
+    cv::waitKey(30);
+  }
+  catch (cv_bridge::Exception& e)
+  {
+    ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+  }
+}
+
+
+
 int main(int argc, char *argv[])
 {
-    //import images
     Mat imgSeq[10];
-    stringstream SSfileName;
-    string fileName;
-    for(int i = 0; i < 8; i++){
-//        SSfileName<<"/home/lf/workspace/OpticalFlow/Army/frame"<<i+7<<".png";
+    ros::init(argc, argv, "optical_process");
+    ros::NodeHandle nh;
+    cv::namedWindow("view");
+    cv::startWindowThread();
+    image_transport::ImageTransport it(nh);
+    image_transport::Subscriber sub = it.subscribe("guidance/right_image", 1, imageCallback);
+    ros::spin();
+    cv::destroyWindow("view");
 
-        SSfileName<<"/home/lf/workspace/OpticalFlow/images/"<<i+1<<".jpg";
-        SSfileName>>fileName;
-        cout<<fileName<<endl;
-        imgSeq[i] = imread(fileName,1);
-        if(imgSeq[i].data==NULL){
-            cout<<"File is not found"<<endl;
-            return 1;
-        }
-        SSfileName.clear();
-    }
 
     vector<Point2f> features;
     vector<int> status;
@@ -58,6 +70,5 @@ int main(int argc, char *argv[])
         pre_features=features;
     }
     imshow("figure 1",imgResult);
-    waitKey(0);
     return 0;
 }
