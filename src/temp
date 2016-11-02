@@ -1,0 +1,23 @@
+ vector<Point2f> features;
+    vector<int> status;
+    status.resize(100);
+    for(int i=0; i<100;i++){
+        status[i]=2;
+    }
+    Mat img_r;
+    vector<Point2f> features_r;
+    vector<Point2f> pre_features;
+    Mat imgResult;
+
+    imgSeq[0].copyTo(imgResult);
+
+    for(int i = 0; i < 8; i++){
+        trackFeatures(imgSeq[i],img_r,features,features_r,status,0);
+        if(i==1){
+            for(int j=0; j<100; j++){
+                arrowedLine(imgResult,features[j],pre_features[j],CV_RGB(255,0,0),2,8,0);
+            }
+        }
+        pre_features=features;
+    }
+    imshow("figure 1",imgResult);
